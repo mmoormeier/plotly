@@ -20,6 +20,60 @@ d3.json("samples.json").then((importedData) => {
 });
 
 
+// Display the default plot
+function init() {
+
+    // Trace1 for the data
+    var trace1 = {
+        x: "",
+        y: "",
+        text: "",
+        name: "OTU",
+        type: "bar",
+        orientation: "h"
+    };
+
+    var data = [trace1];
+
+    var layout = {
+        title: "Top Ten OTUs",
+        xaxis: { title: "Sample Values" },
+        height: 600,
+        width: 800
+    };
+
+    Plotly.newPlot("bar", data, layout);
+
+    var trace2 = {
+        x: "",
+        y: "",
+        text: "",
+        name: "OTU",
+        mode: "markers",
+        marker: {
+           
+        }
+    };
+
+    // // // data
+    var data2 = [trace2];
+
+    // // Apply the group bar mode to the layout
+    var layout = {
+        title: "Test Subject Data",
+        height: 600,
+        width: 1000,
+        xaxis: { title: "Sample Values" },
+        yaxis: { title: "OTU ID" }
+    };
+
+    // // Render the plot to the div tag with id "plot"
+    Plotly.newPlot("bubble", data2, layout);
+
+
+}
+
+
 // Function called by DOM changes
 function optionChanged(subject) {
 
@@ -43,18 +97,21 @@ function updateDemo(subject) {
     d3.json("samples.json").then((incomingData) => {
         // console.log(incomingData)
 
-        var subDemo = incomingData.metadata.filter(meta => meta.id == subject);
-        // console.log(subDemo)  
-        var myString = JSON.stringify(subDemo, null, 2);
-        JSON.parse(myString);
-        myString = myString.replace("[", "").replace("\"", "").replace("]", "").replace("{", "").replace("}", "");
+        var demobody = d3.select("#sample-metadata");
 
-        document.getElementById("sample-metadata").innerHTML = myString;
+        demobody.html("")
+        var subDemo = incomingData.metadata.filter(meta => meta.id == subject)[0];
+        console.log(subDemo)
+
+        
+        Object.entries(subDemo).forEach(([key, value]) => {
+            demobody.append("p").text(`${key}:${value}`);
+          
+        });
 
     });
 
 }
-
 
 function updateBar(subject) {
     // Use d3.json() to fetch data from JSON file
@@ -69,28 +126,16 @@ function updateBar(subject) {
         var otuLabel = sampleData.otu_labels
         var otuValues = sampleData.sample_values
 
-
-
-        // Sort the data by sample values
-        // var sortedByvalues = sampleData.sort((a, b) => b.otuValues - a.otuValues);
-
         // Slice the first 10 objects for plotting
-        sliceID = otuID.slice(0, 10);
-        stringID = sliceID.map(String)
+        var sliceID = otuID.slice(0, 10).reverse();
+        // convert to string and add OTU
+        var stringID = sliceID.map(id => `OTU ID ${id}`);
 
-        console.log(stringID)
 
-        sliceLabel = otuLabel.slice(0, 10);
+        var sliceLabel = otuLabel.slice(0, 10).reverse();
 
-        console.log(sliceLabel)
-
-        sliceValues = otuValues.slice(0, 10);
-
-        console.log(sliceValues)
-
-        // Reverse the array to accommodate Plotly's defaults
-        // reversedData = slicedData.reverse();
-
+        var sliceValues = otuValues.slice(0, 10).reverse();
+      
         // Trace1 for the data
         var trace1 = {
             x: sliceValues,
@@ -101,7 +146,6 @@ function updateBar(subject) {
             orientation: "h"
         };
 
-      
 
         // // // data
         var data = [trace1];
@@ -109,16 +153,12 @@ function updateBar(subject) {
         // // Apply the group bar mode to the layout
         var layout = {
             title: "Top Ten OTUs",
-            
-           
+            xaxis: { title: "Sample Values" }
+
         };
 
         // // Render the plot to the div tag with id "plot"
         Plotly.newPlot("bar", data, layout);
-
-
-
-
 
     });
 
@@ -127,7 +167,7 @@ function updateBar(subject) {
 }
 
 function updateBubble(subject) {
-   // Use d3.json() to fetch data from JSON file
+    // Use d3.json() to fetch data from JSON file
     // Incoming data is internally referred to as incomingData
     d3.json("samples.json").then((incomingData) => {
 
@@ -140,72 +180,42 @@ function updateBubble(subject) {
         var otuValues = sampleData.sample_values
 
 
-
-        // Sort the data by sample values
-        // var sortedByvalues = sampleData.sort((a, b) => b.otuValues - a.otuValues);
-
-        // Slice the first 10 objects for plotting
-        sliceID = otuID.slice(0, 10);
-        stringID = sliceID.map(String)
-
-        // console.log(stringID)
-
-        sliceLabel = otuLabel.slice(0, 10);
-
-        // console.log(sliceLabel)
-
-        sliceValues = otuValues.slice(0, 10);
-
-        // console.log(sliceValues)
-
-        // Reverse the array to accommodate Plotly's defaults
-        // reversedData = slicedData.reverse();
-
         // Trace1 for the data
-        var trace1 = {
-            x: stringID,
-            y: sliceValues,
-            text: sliceLabel,
+        var trace2 = {
+            x: otuID,
+            y: otuValues,
+            text: otuLabel,
             name: "OTU",
             mode: "markers",
             marker: {
-                color: ['#B98A8A', '#908AB9', '#4EBF7F', '#89F908', '#F7CB1A', '#FF66B2', '#54627A', '#E2451E', '#176F38', '#17436F'],
-                size: (sliceValues *1000)
+                color: otuID,
+                size: otuValues
 
             }
         };
 
-              // // // data
-        var data = [trace1];
+        // // // data
+        var data = [trace2];
 
         // // Apply the group bar mode to the layout
         var layout = {
             title: "Test Subject Data",
             height: 600,
-            width: 600
-           
+            width: 1000,
+            xaxis: { title: "Sample Values" },
+            yaxis: { title: "OTU ID" }
         };
 
         // // Render the plot to the div tag with id "plot"
         Plotly.newPlot("bubble", data, layout);
 
 
-
-
-
     });
 
 
+};
 
 
-
-}
-
-
-
-// Create init function upon page load to display data
-    // pick first value
-
-
+init();
 
 
